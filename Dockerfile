@@ -6,8 +6,8 @@ ARG     torsocks_version
 
 ENV     HOME /var/lib/tor
 ENV     POETRY_VIRTUALENVS_CREATE=false
-
-RUN     apk add --no-cache git bind-tools cargo libevent-dev openssl-dev gnupg gcc make automake ca-certificates autoconf musl-dev coreutils libffi-dev zlib-dev && \
+RUN apk add openssl libevent && \
+    apk add --virtual .build --no-cache alpine-sdk automake autoconf bind-tools cargo libevent-dev openssl-dev gnupg libffi-dev zlib-dev && \
     mkdir -p /usr/local/src/ /var/lib/tor/ && \
     git clone https://git.torproject.org/tor.git /usr/local/src/tor && \
     cd /usr/local/src/tor && \
@@ -22,8 +22,7 @@ RUN     apk add --no-cache git bind-tools cargo libevent-dev openssl-dev gnupg g
     cd .. && \
     rm -rf tor && \
     pip3 install --upgrade pip poetry && \
-    apk del git libevent-dev openssl-dev gnupg cargo make automake autoconf musl-dev coreutils libffi-dev && \
-    apk add --no-cache libevent openssl
+    apk del .build
 
 RUN    apk add --no-cache git gcc make automake autoconf musl-dev libtool && \
     git clone https://git.torproject.org/torsocks.git /usr/local/src/torsocks && \
@@ -41,9 +40,9 @@ RUN     mkdir -p /etc/tor/
 
 COPY    pyproject.toml /usr/local/src/onions/
 
-RUN     cd /usr/local/src/onions && apk add --no-cache openssl-dev libffi-dev gcc libc-dev && \
+RUN     cd /usr/local/src/onions && apk add --virtual .build --no-cache build-base openssl-dev libffi-dev && \
     poetry install --no-dev --no-root && \
-    apk del libffi-dev gcc libc-dev openssl-dev
+    apk del .build
 
 COPY    onions /usr/local/src/onions/onions
 COPY    poetry.lock /usr/local/src/onions/
